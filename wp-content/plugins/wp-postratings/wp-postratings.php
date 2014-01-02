@@ -3,7 +3,7 @@
 Plugin Name: WP-PostRatings
 Plugin URI: http://lesterchan.net/portfolio/programming/php/
 Description: Adds an AJAX rating system for your WordPress blog's post/page.
-Version: 1.74
+Version: 1.76
 Author: Lester 'GaMerZ' Chan
 Author URI: http://lesterchan.net
 Text Domain: wp-postratings
@@ -204,6 +204,7 @@ function the_ratings_vote($post_id, $new_user = 0, $new_score = 0, $new_average 
   if($new_user == 0 && $new_score == 0 && $new_average == 0) {
     $post_ratings_data = null;
   } else {
+	$post_ratings_data = new stdClass();
     $post_ratings_data->ratings_users = $new_user;
     $post_ratings_data->ratings_score = $new_score;
     $post_ratings_data->ratings_average = $new_average;
@@ -603,15 +604,10 @@ function process_ratings() {
 					$post_ratings_users = ($post_ratings_users+1);
 					$post_ratings_score = ($post_ratings_score+intval($ratings_value[$rate-1]));
 					$post_ratings_average = round($post_ratings_score/$post_ratings_users, 2);
-					if (!update_post_meta($post_id, 'ratings_users', $post_ratings_users)) {
-						add_post_meta($post_id, 'ratings_users', $post_ratings_users, true);
-					}
-					if(!update_post_meta($post_id, 'ratings_score', $post_ratings_score)) {
-						add_post_meta($post_id, 'ratings_score', $post_ratings_score, true);
-					}
-					if(!update_post_meta($post_id, 'ratings_average', $post_ratings_average)) {
-						add_post_meta($post_id, 'ratings_average', $post_ratings_average, true);
-					}
+					update_post_meta($post_id, 'ratings_users', $post_ratings_users);
+					update_post_meta($post_id, 'ratings_score', $post_ratings_score);
+					update_post_meta($post_id, 'ratings_average', $post_ratings_average);
+
 					// Add Log
 					if(!empty($user_identity)) {
 						$rate_user = addslashes($user_identity);
@@ -701,7 +697,7 @@ function manage_ratings()
 						}
 						echo '<tr>'."\n";
 						echo '<td>'."\n";
-						if('rtl' == $text_direction && file_exists($postratings_path.'/'.$postratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
+						if((isset($text_direction) && 'rtl' == $text_direction) && file_exists($postratings_path.'/'.$postratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT)) {
 							echo '<img src="'.$postratings_url.'/'.$postratings_image.'/rating_start-rtl.'.RATINGS_IMG_EXT.'" alt="rating_start-rtl.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 						} elseif(file_exists($postratings_path.'/'.$postratings_image.'/rating_start.'.RATINGS_IMG_EXT)) {
 							echo '<img src="'.$postratings_url.'/'.$postratings_image.'/rating_start.'.RATINGS_IMG_EXT.'" alt="rating_start.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
@@ -719,7 +715,7 @@ function manage_ratings()
 								echo '<img src="'.$postratings_url.'/'.$postratings_image.'/rating_on.'.RATINGS_IMG_EXT.'" alt="rating_on.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 							}
 						}
-		        		if('rtl' == $text_direction && file_exists($postratings_path.'/'.$postratings_image.'/rating_end-rtl.'.RATINGS_IMG_EXT)) {
+		        		if((isset($text_direction) && 'rtl' == $text_direction) && file_exists($postratings_path.'/'.$postratings_image.'/rating_end-rtl.'.RATINGS_IMG_EXT)) {
 							echo '<img src="'.$postratings_url.'/'.$postratings_image.'/rating_end-rtl.'.RATINGS_IMG_EXT.'" alt="rating_end-rtl.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
 						} elseif(file_exists($postratings_path.'/'.$postratings_image.'/rating_end.'.RATINGS_IMG_EXT)) {
 							echo '<img src="'.$postratings_url.'/'.$postratings_image.'/rating_end.'.RATINGS_IMG_EXT.'" alt="rating_end.'.RATINGS_IMG_EXT.'" class="post-ratings-image" />';
@@ -1139,9 +1135,9 @@ function expand_ratings_template($template, $post_id, $post_ratings_data = null,
 	// Get post related variables
 	if(is_null($post_ratings_data)) {
 		$post_ratings_data = get_post_custom($post_id);
-		$post_ratings_users = intval($post_ratings_data['ratings_users'][0]);
-		$post_ratings_score = intval($post_ratings_data['ratings_score'][0]);
-		$post_ratings_average = floatval($post_ratings_data['ratings_average'][0]);
+		$post_ratings_users = is_array($post_ratings_data) && array_key_exists('ratings_users', $post_ratings_data) ? intval($post_ratings_data['ratings_users'][0]) : 0;
+		$post_ratings_score = is_array($post_ratings_data) &&  array_key_exists('ratings_score', $post_ratings_data) ? intval($post_ratings_data['ratings_score'][0]) : 0;
+		$post_ratings_average = is_array($post_ratings_data) &&  array_key_exists('ratings_average', $post_ratings_data) ? floatval($post_ratings_data['ratings_average'][0]) : 0;
 	} else {
 		$post_ratings_users = intval($post_ratings_data->ratings_users);
 		$post_ratings_score = intval($post_ratings_data->ratings_score);
@@ -1227,12 +1223,12 @@ function expand_ratings_template($template, $post_id, $post_ratings_data = null,
 		if(!isset($post_link))
 			$post_link = get_permalink($post_id);
 
-		$post_meta = '<meta itemprop="name" content="'.esc_attr($post_title).'"><meta itemprop="description" content="'.esc_attr($post_excerpt).'"><meta itemprop="url" content="'.$post_link.'">';
+		$post_meta = '<meta itemprop="name" content="'.esc_attr($post_title).'" /><meta itemprop="description" content="'.wp_kses($post_excerpt, array()).'" /><meta itemprop="url" content="'.$post_link.'" />';
 		$ratings_meta = '<div style="display: none;" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">';
-		$ratings_meta .= '<meta itemprop="bestRating" content="'.$ratings_max.'">';
-		$ratings_meta .= '<meta itemprop="ratingValue" content="'.$post_ratings_average.'">';
-		$ratings_meta .= '<meta itemprop="ratingCount" content="'.$post_ratings_users.'">';
-		$ratings_meta .= '<meta itemprop="reviewCount" content="'.$post_ratings_users.'">';
+		$ratings_meta .= '<meta itemprop="bestRating" content="'.$ratings_max.'" />';
+		$ratings_meta .= '<meta itemprop="ratingValue" content="'.$post_ratings_average.'" />';
+		$ratings_meta .= '<meta itemprop="ratingCount" content="'.$post_ratings_users.'" />';
+		$ratings_meta .= '<meta itemprop="reviewCount" content="'.$post_ratings_users.'" />';
 		$ratings_meta .= '</div>';
 
 		$value = $value.$post_meta.$ratings_meta;
@@ -1241,7 +1237,7 @@ function expand_ratings_template($template, $post_id, $post_ratings_data = null,
 	// Return value
 	$post = $temp_post;
 
-	return apply_filters('expand_ratings_template', htmlspecialchars_decode($value));
+	return apply_filters('expand_ratings_template', $value);
 }
 
 
