@@ -1,0 +1,36 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+# END WordPress
+
+# BEGIN Custom Redirects #
+Redirect 301 /drills.php http://www.volleytastic.com/playing-volleyball/volleyball-drills-training-and-exercises/
+Redirect 301 /beach_volleyball_history.php http://www.volleytastic.com/about-volleyball/history-of-beach-volleyball/ 
+Redirect 301 /fitness.php http://www.volleytastic.com/playing-volleyball/fitness-stretching-volleyball-fitness/
+Redirect 301 /injuries.php http://www.volleytastic.com/playing-volleyball/volleyball-injuries-and-prevention/
+Redirect 301 /rules_basic_volleyball.php http://www.volleytastic.com/playing-volleyball/basic-volleyball-rules/
+Redirect 301 /rules.php http://www.volleytastic.com/playing-volleyball/basic-volleyball-rules/
+Redirect 301 /skills.php http://www.volleytastic.com/playing-volleyball/volleyball-skills/
+Redirect 301 /the_ball.php http://www.volleytastic.com/about-volleyball/the-ball/
+Redirect 301 /volleyball_court.php http://www.volleytastic.com/about-volleyball/volleyball-court-dimensions/
+Redirect 301 /volleyball_history.php http://www.volleytastic.com/about-volleyball/history-of-indoor-volleyball/
+
+Redirect 301 /trainingteam.php http://www.spikeopaths.org.uk/
+Redirect 301 /new_members.php http://www.spikeopaths.org.uk/
+Redirect 301 /member_gallery_1.php?display=committee http://www.spikeopaths.org.uk/
+Redirect 301 /member_gallery_1.php?display=team3 http://www.spikeopaths.org.uk/
+Redirect 301 /tourno_poole.php http://www.spikeopaths.org.uk/
+Redirect 301 /testimonials.php http://www.spikeopaths.org.uk/
+Redirect 301 /member_gallery_2.php http://www.spikeopaths.org.uk/
