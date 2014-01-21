@@ -28,7 +28,7 @@ get_header();
 
 				<?php the_content(); ?>
 
-
+				<!--
 				<div id="map_canvas" style="width:100%;height:800px;">Google Map</div> 
 
 				<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script> 
@@ -79,7 +79,7 @@ get_header();
 				        }
 				    }
 				</script> 
-
+				-->
 
 			</section>
 
